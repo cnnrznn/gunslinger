@@ -1,5 +1,9 @@
+#include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/module.h>
+
+#include "gs-interface.h"
+#include "gs-log.h"
 
 MODULE_LICENSE("GPL");
 
@@ -10,10 +14,18 @@ MODULE_DESCRIPTION("A module for enabling a distributed OS, complete with:\n \
                         \t(3) Fast working-set estimation" \
                         );
 
+static int major;
+
 static int __init
 gsm_init(void)
 {
-        return 1; // not implemented
+        major = register_chrdev(0, DEVICENAME, &fops);
+        if (major < 0) {
+                gs_log("failed to load module");
+                return major;
+        }
+
+        return 0;
 }
 
 static void __exit
