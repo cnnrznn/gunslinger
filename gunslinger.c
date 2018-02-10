@@ -24,6 +24,8 @@ gsm_init(void)
                 gs_log("failed to load module");
                 return major;
         }
+        gs_log("successfully loaded module");
+        gs_log("major number is %d", major);
 
         return 0;
 }
@@ -31,7 +33,8 @@ gsm_init(void)
 static void __exit
 gsm_exit(void)
 {
-        // not implemented
+        unregister_chrdev(major, DEVICENAME);
+        gs_log("bye bye!");
 }
 
 module_init(gsm_init);

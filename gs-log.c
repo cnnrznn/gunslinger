@@ -2,7 +2,7 @@
 #include <stdarg.h>
 
 void
-__gs_log(const char *format, ...)
+_gs_log(const char *format, ...)
 {
         va_list args;
         va_start(args, format);

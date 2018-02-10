@@ -1,4 +1,4 @@
 #define gs_log(fmt, ...)                                \
-        __gs_log("GUNSLINGER: " fmt, ##__VA_ARGS__)
+        _gs_log("GUNSLINGER: " fmt "\n", ##__VA_ARGS__)
 
-extern void __gs_log(const char *, ...);
+extern void _gs_log(const char *, ...);

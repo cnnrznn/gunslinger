@@ -70,10 +70,9 @@ gs_write(       struct file *file,
         if (copy_from_user(&pid, buffer, sizeof(int)))
                 return -EFAULT;
 
-        gs_log("User wants to monitor pid %d\n", pid);
+        gs_log("Scanning pid %d", pid);
 
-        // TODO do the mm walk
-        //
+        // TODO mm walk
 
         return 0;
 }
