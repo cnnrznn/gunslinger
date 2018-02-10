@@ -9,6 +9,7 @@
 
 #include "gs-interface.h"
 #include "gs-log.h"
+#include "gs-mm.h"
 
 static char BUSY = 0;
 
@@ -72,7 +73,7 @@ gs_write(       struct file *file,
 
         gs_log("Scanning pid %d", pid);
 
-        // TODO mm walk
+        clear_notify_young(pid);
 
         return 0;
 }
