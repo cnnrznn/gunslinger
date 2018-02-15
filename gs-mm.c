@@ -18,9 +18,8 @@ gs_walk_pte_entry(pte_t *ptep, unsigned long addr,
         struct page *page = pte_page(pte);
         struct gs_walk_params *gwp = walk->private;
 
-        // 1. check if PTE is more up-to-date
+        // check if PTE is more up-to-date
         if (gwp->clear && pte_young(pte)) {
-                clear_page_idle(page);
                 set_page_young(page);
 
                 set_pte(ptep, pte_mkold(pte));
@@ -53,7 +52,7 @@ do_clear_count_ws(struct mm_struct *mm, char clear)
         walk.mm = mm;
         gwp.clear = clear;
 
-        // 4. for each vm_area_struct
+        // for each vm_area_struct
         for (vma=mm->mmap; vma; vma=vma->vm_next) {
                 gwp.count = 0;
 
