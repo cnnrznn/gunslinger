@@ -5,7 +5,7 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
 
 #include "gs-interface.h"
 #include "gs-log.h"
@@ -73,7 +73,7 @@ gs_write(       struct file *file,
 
         gs_log("Scanning pid %d", pid);
 
-        clear_notify_young(pid);
+        clear_count_ws(pid);
 
         return 0;
 }

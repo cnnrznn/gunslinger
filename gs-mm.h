@@ -1,1 +1,1 @@
-extern void clear_notify_young(int nr);
+extern void clear_count_ws(int nr);

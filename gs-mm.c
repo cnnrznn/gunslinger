@@ -1,31 +1,74 @@
 #include <linux/mm.h>
+#include <linux/page_idle.h>
 #include <linux/pid.h>
 #include <linux/sched.h>
 
 #include "gs-log.h"
 
-static unsigned long count;
+struct gs_walk_params {
+        char clear;
+        unsigned long count;
+};
 
 static int
-gs_walk_pte_entry(pte_t *pte, unsigned long addr,
+gs_walk_pte_entry(pte_t *ptep, unsigned long addr,
                 unsigned long next, struct mm_walk *walk)
 {
-        // 1. if pte_young
-        // 2. count++;
-        // 3. pte_mkold(), set_page_young
+        pte_t pte = *ptep;
+        struct page *page = pte_page(pte);
+        struct gs_walk_params *gwp = walk->private;
+
+        // 1. check if PTE is more up-to-date
+        if (gwp->clear && pte_young(pte)) {
+                clear_page_idle(page);
+                set_page_young(page);
+
+                set_pte(ptep, pte_mkold(pte));
+        }
+
+        /* The pte bit may have been cleared elsewhere,
+         * in which case we should use the page frame
+         * descriptor maintained by the kernel.
+         */
+        gwp->count += (pte_young(pte) || !page_is_idle(page)) ? 1 : 0;
+
+        // In any case, set idleness
+        if (gwp->clear)
+                set_page_idle(page);
+
         return 0;
 }
 
 void
-clear_notify_young(int nr)
+do_clear_count_ws(struct mm_struct *mm, char clear)
 {
-        struct task_struct *task;
-        struct mm_struct *mm;
         struct vm_area_struct *vma;
+        struct gs_walk_params gwp;
 
         struct mm_walk walk = {
                 .pte_entry = gs_walk_pte_entry,
+                .private = &gwp,
         };
+
+        walk.mm = mm;
+        gwp.clear = clear;
+
+        // 4. for each vm_area_struct
+        for (vma=mm->mmap; vma; vma=vma->vm_next) {
+                gwp.count = 0;
+
+                // 5. walk pte's in the range
+                walk_page_vma(vma, &walk);
+
+                gs_log("%lx - %lu", vma->vm_start, gwp.count);
+        }
+}
+
+void
+clear_count_ws(int nr)
+{
+        struct task_struct *task;
+        struct mm_struct *mm;
 
         task = pid_task(find_vpid(nr), PIDTYPE_PID);
         if (!task)
@@ -33,21 +76,17 @@ clear_notify_young(int nr)
 
         mm = task->mm;
 
-        count = 0;
-
         // 3. lock mm_struct for consistent view of page table
         down_write(&mm->mmap_sem);
         spin_lock(&mm->page_table_lock);
 
-        // 4. for each vm_area_struct
-        for (vma=mm->mmap; vma; vma=vma->vm_next) {
-                // 5. walk pte's in the range
-                walk_page_vma(vma, &walk);
-        }
+        do_clear_count_ws(mm, 0);
+        do_clear_count_ws(mm, 1);
 
         // 6. clean up (lock)
         spin_unlock(&mm->page_table_lock);
         up_write(&mm->mmap_sem);
+
 out:
         ;
 }
