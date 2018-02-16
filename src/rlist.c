@@ -12,7 +12,7 @@ rlist_append(struct rlist *rlist, unsigned long addr)
                 goto out;
 
         if (!rlist->head) {
-                rlist->head = kmalloc(sizeof(struct range), GFP_KERNEL);
+                rlist->head = kmalloc(sizeof(struct rang), GFP_KERNEL);
                 if (!rlist->head)
                         goto out;
 
@@ -29,7 +29,7 @@ rlist_append(struct rlist *rlist, unsigned long addr)
                 rlist->tail->end += STEP;
                 goto out;
         } else {
-                rlist->tail->next = kmalloc(sizeof(struct range), GFP_KERNEL);
+                rlist->tail->next = kmalloc(sizeof(struct rang), GFP_KERNEL);
                 if (!rlist->tail->next)
                         goto out;
 
