@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define SIZE 400000
+#define SIZE 40000
 
 int main()
 {

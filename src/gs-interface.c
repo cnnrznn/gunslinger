@@ -10,6 +10,7 @@
 #include "gs-interface.h"
 #include "gs-log.h"
 #include "gs-mm.h"
+#include "rlist.h"
 
 static char BUSY = 0;
 
@@ -64,6 +65,7 @@ gs_write(       struct file *file,
                 loff_t *offset)
 {
         int pid;
+        struct rlist rlist;
 
         if (length != sizeof(int))
                 return -EINVAL;
@@ -73,7 +75,13 @@ gs_write(       struct file *file,
 
         gs_log("Scanning pid %d", pid);
 
-        clear_count_ws(pid);
+        rlist.head = NULL;
+        rlist.tail = NULL;
+
+        clear_collect_ws(&rlist, pid);
+
+        // TODO print rlist
+        rlist_free(&rlist);
 
         return 0;
 }

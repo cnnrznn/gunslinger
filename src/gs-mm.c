@@ -4,10 +4,12 @@
 #include <linux/sched.h>
 
 #include "gs-log.h"
+#include "rlist.h"
 
 struct gs_walk_params {
         char clear;
         unsigned long count;
+        struct rlist *rlist;
 };
 
 static int
@@ -17,6 +19,7 @@ gs_walk_pte_entry(pte_t *ptep, unsigned long addr,
         pte_t pte = *ptep;
         struct page *page = pte_page(pte);
         struct gs_walk_params *gwp = walk->private;
+        struct rlist *rlist = gwp->rlist;
 
         // check if PTE is more up-to-date
         if (gwp->clear && pte_young(pte)) {
@@ -31,6 +34,9 @@ gs_walk_pte_entry(pte_t *ptep, unsigned long addr,
          */
         gwp->count += (pte_young(pte) || !page_is_idle(page)) ? 1 : 0;
 
+        if (!gwp->clear && (pte_young(pte) || !page_is_idle(page)))
+                rlist_append(rlist, addr);
+
         // In any case, set idleness
         if (gwp->clear)
                 set_page_idle(page);
@@ -38,8 +44,8 @@ gs_walk_pte_entry(pte_t *ptep, unsigned long addr,
         return 0;
 }
 
-void
-do_clear_count_ws(struct mm_struct *mm, char clear)
+static void
+do_clear_collect_ws(struct rlist *rlist, struct mm_struct *mm, char clear)
 {
         struct vm_area_struct *vma;
         struct gs_walk_params gwp;
@@ -51,6 +57,7 @@ do_clear_count_ws(struct mm_struct *mm, char clear)
 
         walk.mm = mm;
         gwp.clear = clear;
+        gwp.rlist = rlist;
 
         // for each vm_area_struct
         for (vma=mm->mmap; vma; vma=vma->vm_next) {
@@ -63,15 +70,18 @@ do_clear_count_ws(struct mm_struct *mm, char clear)
         }
 }
 
-void
-clear_count_ws(int nr)
+int
+clear_collect_ws(struct rlist *rlist, int nr)
 {
         struct task_struct *task;
         struct mm_struct *mm;
 
+        if (rlist->head) // start with clean list
+                return -1;
+
         task = pid_task(find_vpid(nr), PIDTYPE_PID);
         if (!task)
-                goto out;
+                return -1;
 
         mm = task->mm;
 
@@ -79,13 +89,12 @@ clear_count_ws(int nr)
         down_write(&mm->mmap_sem);
         spin_lock(&mm->page_table_lock);
 
-        do_clear_count_ws(mm, 0);
-        do_clear_count_ws(mm, 1);
+        do_clear_collect_ws(rlist, mm, 0);
+        do_clear_collect_ws(NULL, mm, 1);
 
         // 6. clean up (lock)
         spin_unlock(&mm->page_table_lock);
         up_write(&mm->mmap_sem);
 
-out:
-        ;
+        return 0;
 }
