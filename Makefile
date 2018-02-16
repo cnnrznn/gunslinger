@@ -1,8 +1,10 @@
 obj-m += mgunslinger.o
-mgunslinger-objs += gunslinger.o
-mgunslinger-objs += gs-interface.o
-mgunslinger-objs += gs-log.o
-mgunslinger-objs += gs-mm.o
+mgunslinger-objs += src/gunslinger.o
+mgunslinger-objs += src/gs-interface.o
+mgunslinger-objs += src/gs-log.o
+mgunslinger-objs += src/gs-mm.o
+
+ccflags-y := -I$(src)/include
 
 all:
 	make -C /lib/modules/$(shell uname -r)/build/ M=$(PWD) modules
