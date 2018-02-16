@@ -8,8 +8,14 @@
 void
 rlist_append(struct rlist *rlist, unsigned long addr)
 {
-        if (rlist->head == NULL) {
+        if (!rlist)
+                goto out;
+
+        if (!rlist->head) {
                 rlist->head = kmalloc(sizeof(struct range), GFP_KERNEL);
+                if (!rlist->head)
+                        goto out;
+
                 rlist->tail = rlist->head;
                 rlist->tail->next = NULL;
 
@@ -24,6 +30,9 @@ rlist_append(struct rlist *rlist, unsigned long addr)
                 goto out;
         } else {
                 rlist->tail->next = kmalloc(sizeof(struct range), GFP_KERNEL);
+                if (!rlist->tail->next)
+                        goto out;
+
                 rlist->tail = rlist->tail->next;
                 rlist->tail->next = NULL;
                 rlist->tail->start = addr;
@@ -39,10 +48,16 @@ rlist_free(struct rlist *rlist)
 {
         struct rang *tmp;
 
+        if (!rlist)
+                goto out;
+
         while (rlist->head) {
                 tmp = rlist->head;
                 rlist->head = rlist->head->next;
 
                 kfree(tmp);
         }
+
+out:
+        ;
 }
