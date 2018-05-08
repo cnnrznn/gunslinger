@@ -1,9 +1,11 @@
 #include <linux/fs.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/slab.h>
 
 #include "gs-interface.h"
 #include "gs-log.h"
+#include "gs-mm.h"
 
 MODULE_LICENSE("GPL");
 
@@ -27,12 +29,20 @@ gsm_init(void)
         gs_log("successfully loaded module");
         gs_log("major number is %d", major);
 
+        addr_list = kmalloc(WS_MAX * sizeof(unsigned long), GFP_KERNEL);
+        if (!addr_list) {
+                gs_log("unable to allocate memory");
+                return 1;
+        }
+
         return 0;
 }
 
 static void __exit
 gsm_exit(void)
 {
+        kfree(addr_list);
+
         unregister_chrdev(major, DEVICENAME);
         gs_log("bye bye!");
 }

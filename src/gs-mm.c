@@ -2,11 +2,9 @@
 #include <linux/page_idle.h>
 #include <linux/pid.h>
 #include <linux/sched.h>
-#include <linux/slab.h>
 
 #include "gs-log.h"
-
-#define WS_MAX 1024 * 4
+#include "gs-mm.h"
 
 unsigned long *addr_list = NULL;
 unsigned long addr_list_size = 0;
@@ -89,13 +87,6 @@ clear_collect_ws(int nr)
                 return -1;
 
         addr_list_size = 0;
-        if (!addr_list) {
-                addr_list = kmalloc(WS_MAX * sizeof(unsigned long), GFP_KERNEL);
-                if (!addr_list) {
-                        gs_log("unable to allocate memory");
-                        return 0;
-                }
-        }
 
         mm = task->mm;
 

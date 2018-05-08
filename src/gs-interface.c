@@ -58,7 +58,7 @@ gs_read(        struct file *file,
         if (length == sizeof(int)) {
                 copy_to_user(buffer, &addr_list_size, sizeof(int));
         }
-        else if (length == addr_list_size) {
+        else if (length == addr_list_size * sizeof(unsigned long)) {
                 copy_to_user(buffer, addr_list, addr_list_size * sizeof(unsigned long));
         }
         else {

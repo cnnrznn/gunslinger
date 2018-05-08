@@ -64,7 +64,7 @@ int main()
                 goto out;
         }
 
-        read(fd, ws, count);
+        read(fd, ws, count * sizeof(unsigned long));
 
         for (i=0; i<count; i++)
             printf("%lx ", ws[i]);
