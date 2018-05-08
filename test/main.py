@@ -17,7 +17,12 @@ count = int.from_bytes(os.read(fd, 4), byteorder=sys.byteorder)
 print('count: {}'.format(count))
 
 ws = os.read(fd, count * 8)
-print(ws)
+wsl = []
+
+for i in range(0, len(ws), 8):
+    wsl.append(int.from_bytes(ws[i:i+8], byteorder=sys.byteorder))
+
+print(wsl)
 
 # close device
 os.close(fd)
