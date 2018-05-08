@@ -3,7 +3,7 @@ mgunslinger-objs += src/gunslinger.o
 mgunslinger-objs += src/gs-interface.o
 mgunslinger-objs += src/gs-log.o
 mgunslinger-objs += src/gs-mm.o
-mgunslinger-objs += src/rlist.o
+#mgunslinger-objs += src/rlist.o
 
 ccflags-y := -I$(src)/include
 

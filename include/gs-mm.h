@@ -1,8 +1,9 @@
 #ifndef _GS_MM_H
 #define _GS_MM_H
 
-#include "rlist.h"
+extern unsigned long *addr_list;
+extern unsigned long addr_list_size;
 
-extern int clear_collect_ws(struct rlist *rlist, int nr);
+extern int clear_collect_ws(int nr);
 
 #endif /* _GS_MM_H */

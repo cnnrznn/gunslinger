@@ -5,12 +5,12 @@
 #include <linux/fs.h>
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/slab.h>
 #include <linux/uaccess.h>
 
 #include "gs-interface.h"
 #include "gs-log.h"
 #include "gs-mm.h"
-#include "rlist.h"
 
 static char BUSY = 0;
 
@@ -55,7 +55,17 @@ gs_read(        struct file *file,
                 size_t length,
                 loff_t *offset)
 {
-        return 0; // not implemented
+        if (length == sizeof(int)) {
+                copy_to_user(buffer, &addr_list_size, sizeof(int));
+        }
+        else if (length == addr_list_size) {
+                copy_to_user(buffer, addr_list, addr_list_size * sizeof(unsigned long));
+        }
+        else {
+                return -EINVAL;
+        }
+
+        return length;
 }
 
 static ssize_t
@@ -65,7 +75,6 @@ gs_write(       struct file *file,
                 loff_t *offset)
 {
         int pid;
-        struct rlist rlist;
 
         if (length != sizeof(int))
                 return -EINVAL;
@@ -75,13 +84,7 @@ gs_write(       struct file *file,
 
         gs_log("Scanning pid %d", pid);
 
-        rlist.head = NULL;
-        rlist.tail = NULL;
-
-        clear_collect_ws(&rlist, pid);
-
-        // TODO print rlist
-        rlist_free(&rlist);
+        clear_collect_ws(pid);
 
         return 0;
 }
