@@ -55,11 +55,14 @@ gs_read(        struct file *file,
                 size_t length,
                 loff_t *offset)
 {
-        if (length == sizeof(int)) {
-                copy_to_user(buffer, &addr_list_size, sizeof(int));
+        if (length == 2*sizeof(int)) {
+                copy_to_user(buffer, &ws_size, sizeof(int));
+                copy_to_user(buffer + sizeof(int), &ds_size, sizeof(int));
         }
-        else if (length == addr_list_size * sizeof(unsigned long)) {
-                copy_to_user(buffer, addr_list, addr_list_size * sizeof(unsigned long));
+        else if (length == (ws_size + ds_size) * sizeof(unsigned long)) {
+                copy_to_user(buffer, ws, ws_size * sizeof(unsigned long));
+                copy_to_user(buffer + (ws_size * sizeof(unsigned long)),
+                                ds, ds_size * sizeof(unsigned long));
         }
         else {
                 return -EINVAL;

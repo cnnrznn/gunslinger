@@ -6,8 +6,10 @@
 #include "gs-log.h"
 #include "gs-mm.h"
 
-unsigned long *addr_list = NULL;
-unsigned long addr_list_size = 0;
+unsigned long *ws = NULL;
+unsigned long ws_size = 0;
+unsigned long *ds = NULL;
+unsigned long ds_size = 0;
 
 struct gs_walk_params {
         char clear;
@@ -29,10 +31,18 @@ gs_walk_pte_entry(pte_t *ptep, unsigned long addr,
                 set_pte(ptep, pte_mkold(pte));
         }
 
-        if (gwp->clear && (pte_young(pte) || !page_is_idle(page))) {
-                if (addr_list_size < WS_MAX) {
-                        addr_list[addr_list_size] = addr;
-                        addr_list_size++;
+        if (gwp->clear) {
+                if ((pte_young(pte) || !page_is_idle(page))) {
+                        if (ws_size < MAX) {
+                                ws[ws_size] = addr;
+                                ws_size++;
+                        }
+                }
+                if (pte_dirty(pte) || pte_soft_dirty(pte)) {
+                        if (ds_size < MAX) {
+                                ds[ds_size] = addr;
+                                ds_size++;
+                        }
                 }
         }
 
@@ -86,7 +96,8 @@ clear_collect_ws(int nr)
         if (!task)
                 return -1;
 
-        addr_list_size = 0;
+        ws_size = 0;
+        ds_size = 0;
 
         mm = task->mm;
 

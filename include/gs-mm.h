@@ -1,10 +1,12 @@
 #ifndef _GS_MM_H
 #define _GS_MM_H
 
-#define WS_MAX 1024 * 4
+#define MAX 200000
 
-extern unsigned long *addr_list;
-extern unsigned long addr_list_size;
+extern unsigned long *ws;
+extern unsigned long ws_size;
+extern unsigned long *ds;
+extern unsigned long ds_size;
 
 extern int clear_collect_ws(int nr);
 
