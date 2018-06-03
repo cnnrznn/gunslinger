@@ -49,6 +49,14 @@ gs_release(struct inode *inode, struct file *file)
         return 0;
 }
 
+/*
+ * TODO
+ * The gs_read function should accept only a single value for length,
+ * which is the number of physical page frames, divided by 8.
+ * I should satisfy this request with a bitmap, one bit for every page
+ * in physical memory to indicate whether that page has been touched since
+ * last scan. Upon reading, this bit is also reset.
+ */
 static ssize_t
 gs_read(        struct file *file,
                 char __user *buffer,
@@ -71,6 +79,12 @@ gs_read(        struct file *file,
         return length;
 }
 
+/*
+ * TODO
+ * This function's only job should be to specify the current PID to scan.
+ * All 'heavy' actions performed by this module should be initiated by a call
+ * to gs_read.
+ */
 static ssize_t
 gs_write(       struct file *file,
                 const char __user *buffer,

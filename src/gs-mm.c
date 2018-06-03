@@ -6,6 +6,13 @@
 #include "gs-log.h"
 #include "gs-mm.h"
 
+/*
+ * TODO
+ * Refactor this file to return a bitmap of physical pages.
+ * For any page that is active, set the bit corresponding
+ * to that page's physical address.
+ */
+
 unsigned long *ws = NULL;
 unsigned long ws_size = 0;
 unsigned long *ds = NULL;

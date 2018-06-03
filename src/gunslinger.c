@@ -18,6 +18,11 @@ MODULE_DESCRIPTION("A module for enabling a distributed OS, complete with:\n \
 
 static int major;
 
+/* TODO
+ * These functions should only allocate enough memory to store
+ * a bitmap for the number of physical pages.
+ */
+
 static int __init
 gsm_init(void)
 {
